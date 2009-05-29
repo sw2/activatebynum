@@ -1,3 +1,0 @@
-#summary Example
-
-http://activatebynum.googlecode.com/svn/wiki/abn_example.png

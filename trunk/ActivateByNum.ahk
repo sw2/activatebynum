@@ -39,9 +39,12 @@ return
 
 FocusButton(n)
 {
+	; these static variables can become inaccurate if windows are created or closed
+	; inbetween pressing of hotkeys, but in practice, we can safely ignore the
+	; inaccuracy
 	static prevGrpIdx := 0
 	static prevBtnIdxInGrp := 0
-		
+
 	WinGet,	pidTaskbar, PID, ahk_class Shell_TrayWnd
 	hProc := DllCall("OpenProcess", "Uint", 0x38, "int", 0, "Uint", pidTaskbar)
 	pProc := DllCall("VirtualAllocEx", "Uint", hProc, "Uint", 0, "Uint", 32, "Uint", 0x1000, "Uint", 0x4)
@@ -81,11 +84,11 @@ FocusButton(n)
 				hidden := Statyle & 0x08 ; TBSTATE_HIDDEN
 				If hidden
 				{
-					If btnSeen = %n% ; the button we're finding were in the previous collapsed group
+					If btnSeen = %n% ; the button we're trying to find were in the previous collapsed group
 						Break
 					grpCollapsed := false
 				}
-				Else
+				Else ; the group is collapsed
 				{
 					btnSeen := btnSeen + 1
 					if btnSeen > %n%
@@ -106,7 +109,7 @@ FocusButton(n)
 
 						If btnInGrpSeen = 1
 						{
-							; in case we need them for wrapping
+							; remember them in case we need them for wrapping
 							grpIdx0 := grpSeen
 							hWnd0 := hWnd
 						}
@@ -143,6 +146,8 @@ FocusButton(n)
 		
 		if (grpCollapsed = true && btnSeen >= %n% && activated = false)
 		{
+			; this handles the k+1-th time WIN+n is pressed (consecutively) when the n-th group has only k window buttons
+			; we activate the first window in this group
 			WinActivate, ahk_id %hWnd0%
 			prevGrpIdx := grpIdx0
 			prevBtnIdxInGrp := 1

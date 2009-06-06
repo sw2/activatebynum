@@ -95,12 +95,29 @@ Build_hWndArray(maxGroupCount)
 		{
 			If g_groupCount >= %maxGroupCount%
 				Break
-			g_groupCount := g_groupCount + 1
-			AddGroup(g_groupCount)
+				
+			hidden := Statyle & 0x08 ; TBSTATE_HIDDEN
+			If hidden
+				grpCollapsed := false
+			Else
+			{
+				g_groupCount := g_groupCount + 1
+				AddGroup(g_groupCount)
+				grpCollapsed := true
+			}
 		}
 		else ; actual window button
 		{
-			Add_hWndToArray(g_groupCount, hWnd)
+			If grpCollapsed
+			{
+				Add_hWndToArray(g_groupCount, hWnd)
+			}
+			Else
+			{
+				g_groupCount := g_groupCount + 1
+				AddGroup(g_groupCount)
+				Add_hWndToArray(g_groupCount, hWnd)
+			}
 		}
 	}
 

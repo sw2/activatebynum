@@ -2,6 +2,7 @@ Loop 10
 {
 	n := A_Index-1
 	Hotkey, #%n%, Focus%n%
+	Hotkey, #Numpad%n%, Focus%n%
 }
 
 return

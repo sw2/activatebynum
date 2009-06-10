@@ -6,12 +6,16 @@ Use <i>ActivateByNum</i>, an AutoHotkey (v1.0.46+) http://www.autohotkey.com/ sc
 
 Download the standalone executable here. The source code (AutoHotkey script) is also available at the Google Code page: http://code.google.com/p/activatebynum/downloads/list
 
+<b>Supported systems</b>
+
+Windows XP (32-bit), Windows Vista (32-bit and 64-bit) 
+
+<b>Other recommended utilities</b>
+
+<i>ActivateByNum</i> works best when used with <i>Taskix</i> http://taskix.robustit.com/ or <i>Taskbar Shuffle</i> http://nerdcave.webs.com/ for rearranging taskbar buttons and <i>Taskbaric</i> http://sw2.deviantart.com/art/Iconize-Taskbar-Buttons-108127143 for iconizing taskbar buttons.
+
 <b>Update June 6, 2009</b>
 
 Incorporated a few suggestions from :devfriele80:
 <b>1.</b> Numpad keys work now
 <b>2.</b> The target window will be minimized if it's already active (only for windows not in any collapsed group)
-
-<b>Other recommended utilities</b>
-
-<i>ActivateByNum</i> works best when used with <i>Taskix</i> http://taskix.robustit.com/ or <i>Taskbar Shuffle</i> http://nerdcave.webs.com/ for rearranging taskbar buttons and <i>Taskbaric</i> http://sw2.deviantart.com/art/Iconize-Taskbar-Buttons-108127143 for iconizing taskbar buttons.

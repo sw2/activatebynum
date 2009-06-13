@@ -40,6 +40,42 @@ Focus0:
 FocusButton(10)
 return
 
+FocusButton(n)
+{
+	global g_bundleCount
+	
+	; these static variables can become inaccurate if windows are created or closed
+	; inbetween pressing of hotkeys, but in practice, we can safely ignore the
+	; inaccuracy
+	static prevBundleIndex := 0
+	static prevWindowIndex := 0
+
+	Build_hWndArray(n)
+
+	if (g_bundleCount >= n)
+	{
+		bundleSize := BundleSize(n)
+		
+		if n = %prevBundleIndex%
+			windowIndex := Mod(prevWindowIndex, bundleSize) + 1
+		else
+			windowIndex := 1
+
+		hWnd := Get_hWndFromArray(n, windowIndex)
+
+		If bundleSize > 1 ; cycle through windows in the same bundle
+			WinActivate, ahk_id %hWnd%
+		Else ; single-window bundle; activate (restore) or minimize the window depending on whether it's active
+			IfWinActive, ahk_id %hWnd%
+				WinMinimize, ahk_id %hWnd%
+			Else
+				WinActivate, ahk_id %hWnd%
+			
+		prevBundleIndex := n
+		prevWindowIndex := windowIndex
+	}
+}
+
 #-::
 #NumpadSub::
 	ShowToolTips()
@@ -54,7 +90,7 @@ Return
 ShowToolTips()
 {
 	global g_bundleCount
-    Build_hWndArray(10)
+	Build_hWndArray(10)
 
 	CoordMode, ToolTip, Screen
 	Loop, %g_bundleCount%
@@ -99,11 +135,11 @@ Get_hWndFromArray(gi, wi)
 	return g_hWnd%gi%_%wi%
 }
 
-SetButtonTopLeftLoc(gi, x, y)
+RecButtonTopLeftLoc(gi, xTB, yTB, left, top)
 {
 	global
-	g_xs%gi% := x
-	g_ys%gi% := y
+	g_xs%gi% := xTB + left
+	g_ys%gi% := yTB + top
 }
 
 Build_hWndArray(maxBundleCount)
@@ -116,6 +152,12 @@ Build_hWndArray(maxBundleCount)
 	idxTB := GetTaskSwBar()
 	SendMessage, 0x418, 0, 0, ToolbarWindow32%idxTB%, ahk_class Shell_TrayWnd ; TB_BUTTONCOUNT
 	buttonCount := ErrorLevel
+
+	ControlGet, hWndTB, hWnd,, ToolbarWindow32%idxTB%, ahk_class Shell_TrayWnd
+	WinGetPos, xTB, yTB,,, ahk_id %hWndTB%
+	
+	VarSetCapacity(btn, 32, 0)
+	VarSetCapacity(rect, 32, 0)
 	
 	g_bundleCount := 0
 	
@@ -123,18 +165,17 @@ Build_hWndArray(maxBundleCount)
 	{
 		SendMessage, 0x417, A_Index-1, pProc, ToolbarWindow32%idxTB%, ahk_class Shell_TrayWnd ; TB_GETBUTTON
 	
-		VarSetCapacity(btn, 32, 0)
 		DllCall("ReadProcessMemory", "Uint", hProc, "Uint", pProc, "Uint", &btn, "Uint", 32, "Uint", 0)
 		
-		idn	:= NumGet(btn, 4)
+		idn     := NumGet(btn, 4)
 		Statyle := NumGet(btn, 8, "Char")
-		dwData := NumGet(btn, 12)
+		dwData  := NumGet(btn, 12)
 		If Not dwData
 			dwData := NumGet(btn, 16, "int64")
 			
 		DllCall("ReadProcessMemory", "Uint", hProc, "Uint", dwData, "int64P", hWnd:=0, "Uint", NumGet(btn,12) ? 4:8, "Uint", 0)
 		
-		If Not hWnd ; group button, indicates the start of a group
+		If Not hWnd ; group button, indicates the start of a group of similar windows
 		{
 			If g_bundleCount >= %maxBundleCount%
 				Break
@@ -146,8 +187,9 @@ Build_hWndArray(maxBundleCount)
 				g_bundleCount := g_bundleCount + 1
 				AddBundle(g_bundleCount)
 				
-				GetTaskbarButtonTopLeft(idn, x, y)
-				SetButtonTopLeftLoc(g_bundleCount, x, y)
+				SendMessage, 0x433, idn, pProc, ToolbarWindow32%idxTB%, ahk_class Shell_TrayWnd ; TB_GETRECT
+				DllCall("ReadProcessMemory", "Uint", hProc, "Uint", pProc, "Uint", &rect, "Uint", 32, "Uint", 0)
+				RecButtonTopLeftLoc(g_bundleCount, xTB, yTB, NumGet(rect, 0), NumGet(rect, 4))
 			}
 			Else
 				grpCollapsed := false
@@ -160,54 +202,22 @@ Build_hWndArray(maxBundleCount)
 			}
 			Else
 			{
+				If g_bundleCount >= %maxBundleCount%
+					Break
+			
 				g_bundleCount := g_bundleCount + 1
 				AddBundle(g_bundleCount)
 				Add_hWndToArray(g_bundleCount, hWnd)
 				
-				GetTaskbarButtonTopLeft(idn, x, y)
-				SetButtonTopLeftLoc(g_bundleCount, x, y)
+				SendMessage, 0x433, idn, pProc, ToolbarWindow32%idxTB%, ahk_class Shell_TrayWnd ; TB_GETRECT
+				DllCall("ReadProcessMemory", "Uint", hProc, "Uint", pProc, "Uint", &rect, "Uint", 32, "Uint", 0)
+				RecButtonTopLeftLoc(g_bundleCount, xTB, yTB, NumGet(rect, 0), NumGet(rect, 4))
 			}
 		}
 	}
 
 	DllCall("VirtualFreeEx", "Uint", hProc, "Uint", pProc, "Uint", 0, "Uint", 0x8000)
 	DllCall("CloseHandle", "Uint", hProc)
-}
-
-FocusButton(n)
-{
-	global g_bundleCount
-	
-	; these static variables can become inaccurate if windows are created or closed
-	; inbetween pressing of hotkeys, but in practice, we can safely ignore the
-	; inaccuracy
-	static prevBundleIndex := 0
-	static prevWindowIndex := 0
-
-	Build_hWndArray(n)
-
-	if (g_bundleCount >= n)
-	{
-		bundleSize := BundleSize(n)
-		
-		if n = %prevBundleIndex%
-			windowIndex := Mod(prevWindowIndex, bundleSize) + 1
-		else
-			windowIndex := 1
-
-		hWnd := Get_hWndFromArray(n, windowIndex)
-
-		If bundleSize > 1 ; cycle through windows in the same bundle
-			WinActivate, ahk_id %hWnd%
-		Else ; single-window bundle; toggles between activating (restoring) and minimizing the window
-			IfWinActive, ahk_id %hWnd%
-				WinMinimize, ahk_id %hWnd%
-			Else
-				WinActivate, ahk_id %hWnd%
-			
-		prevBundleIndex := n
-		prevWindowIndex := windowIndex
-	}
 }
 
 GetTaskSwBar()
@@ -226,33 +236,4 @@ GetTaskSwBar()
 		}
 	}
 	Return	idxTB
-}
-
-GetTaskbarButtonTopLeft(id, ByRef x, ByRef y)
-{
-	idxTB := GetTaskSwBar()
-	WinGet,	pidTaskbar, PID, ahk_class Shell_TrayWnd
-	hProc := DllCall("OpenProcess", "Uint", 0x38, "int", 0, "Uint", pidTaskbar)
-	pProc := DllCall("VirtualAllocEx", "Uint", hProc, "Uint", 0, "Uint", 32, "Uint", 0x1000, "Uint", 0x4)
-	idxTB := GetTaskSwBar()
-
-    SendMessage, 0x433, id, pProc, ToolbarWindow32%idxTB%, ahk_class Shell_TrayWnd ; TB_GETRECT
-	;IfEqual, ErrorLevel, 0, return "Err: can't get rect"
-	
-	VarSetCapacity(rect, 32, 0)
-	DllCall("ReadProcessMemory", "Uint", hProc, "Uint", pProc, "Uint", &rect, "Uint", 32, "Uint", 0)
-	
-	DllCall("VirtualFreeEx", "Uint", hProc, "Uint", pProc, "Uint", 0, "Uint", 0x8000)
-	DllCall("CloseHandle", "Uint", hProc)
-	
-	ControlGet, hWnd, hWnd,, ToolbarWindow32%idxTB%, ahk_class Shell_TrayWnd
-	WinGetPos, x, y, w, h, ahk_id %hWnd%
-	
-	left := NumGet(rect, 0)
-	top := NumGet(rect, 4)
-	right := NumGet(rect, 8)
-	bottom := NumGet(rect, 12)
-
-	x := x + left
-	y := y + top
 }

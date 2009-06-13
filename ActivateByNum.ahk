@@ -41,7 +41,7 @@ FocusButton(10)
 return
 
 #`::
-#NumpadDot::
+#NumpadMult::
 	ShowToolTips()
 	SetTimer, RemoveToolTips, -1000
 Return

@@ -1,21 +1,25 @@
-<b>Description</b>
+<b><u>Description</u></b>
 
-Use <i>ActivateByNum</i>, an AutoHotkey (v1.0.46+) http://www.autohotkey.com/ script, to quickly switch to a window according to its order on the Windows taskbar (it works with only the first 10 windows).
+<i>ActivateByNum</i> enables Windows 7 task-switching hotkeys on XP and Vista.
 
-<b>Windows Logo Key :windows:+1</b> switches to the first window on the taskbar and <b>Windows Logo Key :windows:+2</b> the second, etc. For a collapsed group of window buttons, repeatedly pressing the same <b>Windows Logo Key :windows:+n</b> combination (where <b>n</b> is the position of the group on the taskbar) will cycle through each window in the group (this behavior is similar to the Superbar in Windows 7).
+<b>Windows Logo Key :windows:+1</b> switches to the first window on the taskbar and <b>Windows Logo Key :windows:+2</b> the second, etc. (It works with only the first 10 windows.) For a collapsed group of window buttons, repeatedly pressing the same <b>Windows Logo Key :windows:+n</b> combination (where <b>n</b> is the position of the group on the taskbar) will cycle through each window in the group.
 
-Download the standalone executable here. The source code (AutoHotkey script) is also available at the Google Code page: http://code.google.com/p/activatebynum/downloads/list
+The source code (AutoHotkey script) is available <a href="http://code.google.com/p/activatebynum/downloads/list">here</a>.
 
-<b>Supported systems</b>
+<b><u>Supported systems</u></b>
 
 Windows XP (32-bit), Windows Vista (32-bit and 64-bit) 
 
-<b>Other recommended utilities</b>
+<b><u>Other recommended utilities</u></b>
 
-<i>ActivateByNum</i> works best when used with <i>Taskix</i> http://taskix.robustit.com/ or <i>Taskbar Shuffle</i> http://nerdcave.webs.com/ for rearranging taskbar buttons and <i>Taskbaric</i> http://sw2.deviantart.com/art/Iconize-Taskbar-Buttons-108127143 for iconizing taskbar buttons.
+<i>ActivateByNum</i> works best when used with <a href="http://taskix.robustit.com/"><i>Taskix</i></a> or <a href="http://nerdcave.webs.com/"><i>Taskbar Shuffle</i></a> for rearranging taskbar buttons and <a href="http://sw2.deviantart.com/art/Iconize-Taskbar-Buttons-108127143"><i>Taskbaric</i></a> for iconizing taskbar buttons.
 
-<b>Update June 6, 2009</b>
+<b><u>Update June 6, 2009</u></b>
 
-Incorporated a few suggestions from :devfriele80:
-<b>1.</b> Numpad keys work now
-<b>2.</b> The target window will be minimized if it's already active (only for windows not in any collapsed group)
+Incorporated a few suggestions from :devfriele80::
+<b>1.</b> Numpad keys work now.
+<b>2.</b> The target window will be minimized if it's already active (only for windows not in any collapsed group).
+
+<b><u>Update June 13, 2009</u></b>
+
+<b>Windows Logo Key :windows:+-</b> shows window numbers (>= 5) as tooltips.
